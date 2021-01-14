@@ -38,7 +38,7 @@ func TestIndexUserService(t *testing.T) {
 		{
 			test:   "Must not be able to find non-existent user",
 			uuid:   "invalid",
-			wantOk: true,
+			wantOk: false,
 		},
 	} {
 		t.Run(multTest.test, func(t *testing.T) {

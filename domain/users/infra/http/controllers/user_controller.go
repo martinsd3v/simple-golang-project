@@ -21,7 +21,7 @@ func (controller *Controller) Show(c *gin.Context) {
 	if len(results.PublicUsers()) < 1 {
 		response := toolsErrors.ErrorRequest{}
 		response.Code = 400
-		response.Message = toolsErrors.ErrorDestroyRegister
+		response.Message = toolsErrors.ErrorEmptyResults
 		c.JSON(response.Code, response)
 	} else {
 		response := toolsPaginator.ShowResultsDTO{}

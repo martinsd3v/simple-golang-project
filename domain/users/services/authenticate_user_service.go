@@ -45,7 +45,8 @@ func AuthenticateUserService(repo userRepository.IUserRepository, dto Authentica
 			token.Token = tokenDetails.AccessToken
 			token.Message = toolsErrors.SuccessInAutenticate
 		} else {
-			token.Message = toolsErrors.ErrorInAutenticate
+			err.Code = 400
+			err.Message = toolsErrors.ErrorInAutenticate
 		}
 
 	} else {

@@ -38,7 +38,7 @@ func TestDestroyUserService(t *testing.T) {
 		{
 			test:   "Must be able to delete non-existent user",
 			uuid:   "invalid",
-			wantOk: true,
+			wantOk: false,
 		},
 	} {
 		t.Run(multTest.test, func(t *testing.T) {

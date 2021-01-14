@@ -1,0 +1,362 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>services: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/martinsd3v/simple-golang-project/domain/users/services/authenticate_user_service.go (100.0%)</option>
+				
+				<option value="file1">github.com/martinsd3v/simple-golang-project/domain/users/services/create_user_service.go (87.5%)</option>
+				
+				<option value="file2">github.com/martinsd3v/simple-golang-project/domain/users/services/destroy_user_service.go (100.0%)</option>
+				
+				<option value="file3">github.com/martinsd3v/simple-golang-project/domain/users/services/index_user_service.go (100.0%)</option>
+				
+				<option value="file4">github.com/martinsd3v/simple-golang-project/domain/users/services/show_user_service.go (100.0%)</option>
+				
+				<option value="file5">github.com/martinsd3v/simple-golang-project/domain/users/services/update_user_service.go (92.9%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package services
+
+import (
+        userEntity "github.com/martinsd3v/simple-golang-project/domain/users/entity"
+        userRepository "github.com/martinsd3v/simple-golang-project/domain/users/repository_interface"
+        infraAuth "github.com/martinsd3v/simple-golang-project/infra/auth"
+        infraSecurity "github.com/martinsd3v/simple-golang-project/infra/security"
+        toolsErrors "github.com/martinsd3v/simple-golang-project/tools/errors"
+        toolsValidations "github.com/martinsd3v/simple-golang-project/tools/validations"
+)
+
+//AuthenticateUserDTO object receiver
+type AuthenticateUserDTO struct {
+        Email    string `validate:"isRequired|isEmail"`
+        Password string `validate:"isRequired|isPassword"`
+}
+
+//ResponseAuthenticateDTO response for authenticate
+type ResponseAuthenticateDTO struct {
+        Token   string
+        Message string
+}
+
+//AuthenticateUserService service responsible for auth user
+func AuthenticateUserService(repo userRepository.IUserRepository, dto AuthenticateUserDTO) (token ResponseAuthenticateDTO, err toolsErrors.ErrorDB) <span class="cov8" title="1">{
+        err.Fields = toolsValidations.ValidateStruct(&amp;dto, "", "created")
+
+        if len(err.Fields) &gt; 0 </span><span class="cov8" title="1">{
+                err.Code = 400
+                err.Message = toolsErrors.ErrorInFields
+                return
+        }</span>
+
+        <span class="cov8" title="1">user := userEntity.UserEntity{}
+        user, _ = repo.FindByEmail(dto.Email)
+
+        if user.UUID != "" </span><span class="cov8" title="1">{
+                hash := infraSecurity.Hash{}
+                checkPassword := hash.Compare(user.Password, dto.Password)
+
+                if checkPassword </span><span class="cov8" title="1">{
+                        newToken := infraAuth.NewToken()
+                        tokenDetails, _ := newToken.CreateToken(infraAuth.TokenPayload{UserUUID: user.UUID})
+
+                        token.Token = tokenDetails.AccessToken
+                        token.Message = toolsErrors.SuccessInAutenticate
+                }</span> else<span class="cov8" title="1"> {
+                        err.Code = 400
+                        err.Message = toolsErrors.ErrorInAutenticate
+                }</span>
+
+        } else<span class="cov8" title="1"> {
+                err.Code = 404
+                err.Message = toolsErrors.ErrorEmptyResults
+        }</span>
+
+        <span class="cov8" title="1">return</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package services
+
+import (
+        "encoding/json"
+        "fmt"
+
+        userEntity "github.com/martinsd3v/simple-golang-project/domain/users/entity"
+        userRepository "github.com/martinsd3v/simple-golang-project/domain/users/repository_interface"
+        infraSecurity "github.com/martinsd3v/simple-golang-project/infra/security"
+        toolsErrors "github.com/martinsd3v/simple-golang-project/tools/errors"
+        toolsValidations "github.com/martinsd3v/simple-golang-project/tools/validations"
+)
+
+//CreateUserTDO object receiver
+type CreateUserTDO struct {
+        Name     string `validate:"isRequired"`
+        Email    string `validate:"isRequired|isEmail"`
+        Cpf      string `validate:"isRequired|isCpf"`
+        Password string `validate:"isRequired|isPassword"`
+}
+
+//CreateUserService Serviço responsável pela inserção de registros
+func CreateUserService(repo userRepository.IUserRepository, dto CreateUserTDO) (created userEntity.UserEntity, err toolsErrors.ErrorDB) <span class="cov8" title="1">{
+
+        err.Fields = toolsValidations.ValidateStruct(&amp;dto, "", "created")
+
+        //Check e-mail in use
+        userFinderEmail, _ := repo.FindByEmail(dto.Email)
+        if userFinderEmail.UUID != "" </span><span class="cov8" title="1">{
+                inserError := toolsErrors.ErrorFields{Field: "email", Message: toolsErrors.ErrorExisting}
+                err.Fields = append(err.Fields, inserError)
+        }</span>
+
+        <span class="cov8" title="1">userFinderCpf, _ := repo.FindByCpf(dto.Cpf)
+        if userFinderCpf.UUID != "" </span><span class="cov8" title="1">{
+                inserError := toolsErrors.ErrorFields{Field: "cpf", Message: toolsErrors.ErrorExisting}
+                err.Fields = append(err.Fields, inserError)
+        }</span>
+
+        <span class="cov8" title="1">if len(err.Fields) &gt; 0 </span><span class="cov8" title="1">{
+                err.Code = 400
+                err.Message = toolsErrors.ErrorInFields
+                return
+        }</span>
+
+        //Apply security hash in password
+        <span class="cov8" title="1">hash := infraSecurity.Hash{}
+        dto.Password = hash.Create(dto.Password)
+
+        user := userEntity.UserEntity{}
+
+        //Mergin entity and DTO
+        toMerge, _ := json.Marshal(dto)
+        json.Unmarshal(toMerge, &amp;user)
+
+        created, er := repo.Create(user)
+
+        if er != nil </span><span class="cov0" title="0">{
+                err.Code = 500
+                err.Message = toolsErrors.ErrorCreateRegister
+                fmt.Println(er)
+        }</span>
+
+        <span class="cov8" title="1">return</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package services
+
+import (
+        userRepository "github.com/martinsd3v/simple-golang-project/domain/users/repository_interface"
+)
+
+//DestroyUserService responsible for deleting register
+func DestroyUserService(repo userRepository.IUserRepository, userUUID string) bool <span class="cov8" title="1">{
+        user, _ := repo.FindByUUID(userUUID)
+        if user.UUID != "" </span><span class="cov8" title="1">{
+                err := repo.Destroy(userUUID)
+                return err == nil
+        }</span>
+        <span class="cov8" title="1">return false</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package services
+
+import (
+        userEntity "github.com/martinsd3v/simple-golang-project/domain/users/entity"
+        userRepository "github.com/martinsd3v/simple-golang-project/domain/users/repository_interface"
+)
+
+//IndexUserService service responsible for find one register
+func IndexUserService(repo userRepository.IUserRepository, userUUID string) userEntity.UserEntity <span class="cov8" title="1">{
+        user := userEntity.UserEntity{}
+        user, _ = repo.FindByUUID(userUUID)
+        return user
+}</span>
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package services
+
+import (
+        userEntity "github.com/martinsd3v/simple-golang-project/domain/users/entity"
+        userRepository "github.com/martinsd3v/simple-golang-project/domain/users/repository_interface"
+        toolsPaginator "github.com/martinsd3v/simple-golang-project/tools/paginator"
+)
+
+//ShowUserService serviço responsável por retornar todos registros
+func ShowUserService(repo userRepository.IUserRepository, paginatorDTO toolsPaginator.PaginatorDTO) (userEntity.Users, toolsPaginator.PaginatorDTO) <span class="cov8" title="1">{
+
+        users := userEntity.Users{}
+        users, paginator, _ := repo.All(paginatorDTO)
+
+        return users, paginator
+}</span>
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package services
+
+import (
+        "encoding/json"
+
+        userEntity "github.com/martinsd3v/simple-golang-project/domain/users/entity"
+        userRepository "github.com/martinsd3v/simple-golang-project/domain/users/repository_interface"
+        infraSecurity "github.com/martinsd3v/simple-golang-project/infra/security"
+        toolsErrors "github.com/martinsd3v/simple-golang-project/tools/errors"
+        toolsValidations "github.com/martinsd3v/simple-golang-project/tools/validations"
+)
+
+//UpdateUserTDO object receiver
+type UpdateUserTDO struct {
+        Name     string `validate:"isRequired"`
+        Email    string `validate:"isRequired|isEmail"`
+        Cpf      string `validate:"isRequired|isCpf"`
+        Password string `validate:"isPassword"`
+}
+
+//UpdateUserService Serviço responsável pela inserção de registros
+func UpdateUserService(repo userRepository.IUserRepository, dto UpdateUserTDO, userUUID string) (updated userEntity.UserEntity, err toolsErrors.ErrorDB) <span class="cov8" title="1">{
+
+        err.Fields = toolsValidations.ValidateStruct(&amp;dto, "", "updated")
+
+        //Check e-mail in use
+        userFinderEmail, _ := repo.FindByEmail(dto.Email)
+        if userFinderEmail.UUID != "" &amp;&amp; userFinderEmail.UUID != userUUID </span><span class="cov8" title="1">{
+                inserError := toolsErrors.ErrorFields{Field: "email", Message: toolsErrors.ErrorExisting}
+                err.Fields = append(err.Fields, inserError)
+        }</span>
+
+        <span class="cov8" title="1">userFinderCpf, _ := repo.FindByCpf(dto.Cpf)
+        if userFinderCpf.UUID != "" &amp;&amp; userFinderCpf.UUID != userUUID </span><span class="cov8" title="1">{
+                inserError := toolsErrors.ErrorFields{Field: "cpf", Message: toolsErrors.ErrorExisting}
+                err.Fields = append(err.Fields, inserError)
+        }</span>
+
+        //Check exists user with this identifier
+        <span class="cov8" title="1">userFinderUUID, _ := repo.FindByUUID(userUUID)
+        if userFinderUUID.UUID == "" </span><span class="cov8" title="1">{
+                inserError := toolsErrors.ErrorFields{Field: "uuid", Message: toolsErrors.ErrorEmptyResults}
+                err.Fields = append(err.Fields, inserError)
+        }</span>
+
+        <span class="cov8" title="1">if len(err.Fields) &gt; 0 </span><span class="cov8" title="1">{
+                err.Code = 400
+                err.Message = toolsErrors.ErrorInFields
+                return
+        }</span>
+
+        //Apply security hash in password
+        <span class="cov8" title="1">if dto.Password != "" </span><span class="cov8" title="1">{
+                hash := infraSecurity.Hash{}
+                dto.Password = hash.Create(dto.Password)
+        }</span> else<span class="cov8" title="1"> {
+                dto.Password = userFinderCpf.Password
+        }</span>
+
+        //Mergin entity and DTO
+        <span class="cov8" title="1">toMerge, _ := json.Marshal(dto)
+        json.Unmarshal(toMerge, &amp;userFinderUUID)
+
+        updated, er := repo.Save(userFinderUUID)
+
+        if er != nil </span><span class="cov0" title="0">{
+                err.Code = 500
+                err.Message = toolsErrors.ErrorUpdateRegister
+        }</span>
+
+        <span class="cov8" title="1">return</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

@@ -41,19 +41,19 @@ func TestAuthenticateUserService(t *testing.T) {
 			test:     "Must not authenticate user with invalid email",
 			email:    "invalid",
 			password: dto.Password,
-			wantOk:   true,
+			wantOk:   false,
 		},
 		{
 			test:     "Must not authenticate user with nonexistent email",
 			email:    "invalid@gmail.com",
 			password: dto.Password,
-			wantOk:   true,
+			wantOk:   false,
 		},
 		{
 			test:     "Must not authenticate user with invalid password",
 			email:    dto.Email,
 			password: "invalid",
-			wantOk:   true,
+			wantOk:   false,
 		},
 	} {
 		t.Run(multTest.test, func(t *testing.T) {
